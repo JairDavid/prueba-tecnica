@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  
+  task-storage:
+    container_name: task-storage
+    image: mongo:latest
+    volumes:
+      - mongo-vol:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=D6Rhr2ey7aMzuTK75gcS
+    restart: on-failure
+    networks:
+      - task-ms-net
+
+
+  task-microservice:
+    build: .
+    environment:
+      MONGO_URI: mongodb://root:Dy7a7aMRhzuTK7RhcSy7aMRhzu@task-storage:27017/task-db?authSource=admin
+    ports:
+      - "9000:9000"
+    restart: on-failure
+    depends_on:
+      - task-storage
+    networks:
+      - task-ms-net
+
+
+volumes:
+  mongo-vol:
+
+
+networks:
+  task-ms-net:
+    driver: bridge
