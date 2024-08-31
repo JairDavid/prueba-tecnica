@@ -16,7 +16,7 @@ type TaskDTO struct {
 
 // domain struct
 type Task struct {
-	ID          string `bson:"id"`
+	ID          string `bson:"_id,omitempty"`
 	Title       string `bson:"title"`
 	Description string `bson:"description"`
 	Completed   bool   `bson:"completed"`
