@@ -20,7 +20,8 @@ services:
   task-microservice:
     build: .
     environment:
-      MONGO_URI: mongodb://root:Dy7a7aMRhzuTK7RhcSy7aMRhzu@task-storage:27017/task-db?authSource=admin
+      MONGO_URI: mongodb://admin:D6Rhr2ey7aMzuTK75gcS@task-storage:27017/task-db?authSource=admin
+      TASK_MICROSERVICE_PORT: 9000
     ports:
       - "9000:9000"
     restart: on-failure
