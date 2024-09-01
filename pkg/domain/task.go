@@ -17,9 +17,9 @@ type TaskDTO struct {
 // domain struct
 type Task struct {
 	ID          string `bson:"_id,omitempty"`
-	Title       string `bson:"title"`
-	Description string `bson:"description"`
-	Completed   bool   `bson:"completed"`
+	Title       string `bson:"title,omitempty"`
+	Description string `bson:"description,omitempty"`
+	Completed   bool   `bson:"completed,omitempty"`
 }
 
 func ToTaskDTO(task Task) TaskDTO {

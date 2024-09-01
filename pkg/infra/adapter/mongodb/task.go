@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"omnicloud.mx/tasks/pkg/domain"
 	"omnicloud.mx/tasks/pkg/domain/port"
 )
@@ -92,7 +93,47 @@ func (t TaskRepository) FindById(id string) (domain.Task, error) {
 
 // UpdateById implements port.ITaskRepository.
 func (t TaskRepository) UpdateById(id string, task domain.Task) (domain.Task, error) {
-	panic("unimplemented")
+	var taskResult domain.Task
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Println("[LOG] TaskRepository: ", err)
+		return domain.Task{}, domain.TaskNotFound
+	}
+
+	coll := t.conn.Collection("task")
+
+	// bson.Marshal serializes fields ignoring omitempty tag fields
+	updateData, err := bson.Marshal(task)
+	if err != nil {
+		log.Println("[LOG] TaskRepository: Error marshalling task: ", err)
+		return domain.Task{}, err
+	}
+
+	// fields to update
+	var update bson.M
+	if err := bson.Unmarshal(updateData, &update); err != nil {
+		log.Println("[LOG] TaskRepository: Error unmarshalling task: ", err)
+		return domain.Task{}, err
+	}
+
+	//remove _id field
+	delete(update, "_id")
+
+	//FindOneAndUpdate needs context, filter, update fields, options
+	err = coll.FindOneAndUpdate(context.Background(), bson.M{"_id": objID}, bson.M{"$set": update}, options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&taskResult)
+	if err != nil {
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			log.Println("[LOG] TaskRepository: ", err)
+			return domain.Task{}, domain.TaskNotFound
+		}
+
+		log.Println("[LOG] TaskRepository: ", err)
+		return domain.Task{}, err
+	}
+
+	return taskResult, nil
 }
 
 // DeleteById implements port.ITaskRepository.

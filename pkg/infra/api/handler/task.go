@@ -48,7 +48,7 @@ func (t TaskHandler) Save(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(response.Error{
 			Status:  http.StatusInternalServerError,
-			Message: "something went wrong while saving data" + err.Error(),
+			Message: "something went wrong while saving data: " + err.Error(),
 		})
 		return
 	}
@@ -69,7 +69,7 @@ func (t TaskHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(response.Error{
 			Status:  http.StatusInternalServerError,
-			Message: "something went wrong while quering data" + err.Error(),
+			Message: "something went wrong while quering data: " + err.Error(),
 		})
 		return
 	}
@@ -117,7 +117,48 @@ func (t TaskHandler) FindById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t TaskHandler) UpdateById(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
+	var taskDto domain.TaskDTO
+	w.Header().Set("Content-Type", "application/json")
+
+	idDocument := chi.URLParam(r, "id")
+	if idDocument == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(response.Error{
+			Status:  http.StatusBadRequest,
+			Message: "id path-param is required",
+		})
+		return
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&taskDto)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(response.Error{
+			Status:  http.StatusBadRequest,
+			Message: "something went wrong while serializing data: " + err.Error(),
+		})
+		return
+	}
+
+	result, err := t.taskApp.UpdateById(idDocument, taskDto)
+	if err != nil {
+
+		if errors.Is(err, domain.TaskNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			_ = json.NewEncoder(w).Encode(response.Error{
+				Status:  http.StatusNotFound,
+				Message: err.Error(),
+			})
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+	_ = json.NewEncoder(w).Encode(response.Common{
+		Status:  http.StatusAccepted,
+		Message: "updated successfully",
+		Data:    result,
+	})
 }
 
 func (t TaskHandler) DeleteById(w http.ResponseWriter, r *http.Request) {
