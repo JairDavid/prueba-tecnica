@@ -2,10 +2,11 @@ package adapter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
-	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"omnicloud.mx/tasks/pkg/domain"
@@ -25,12 +26,9 @@ func NewTaskRepository(conn *mongo.Database) port.ITaskRepository {
 // Save implements port.ITaskRepository.
 func (t TaskRepository) Save(task domain.Task) (domain.Task, error) {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
 	coll := t.conn.Collection("task")
 
-	result, err := coll.InsertOne(ctx, task)
+	result, err := coll.InsertOne(context.Background(), task)
 	if err != nil {
 		log.Println("[LOG] TaskRepository: ", err)
 		return domain.Task{}, err
@@ -49,12 +47,47 @@ func (t TaskRepository) Save(task domain.Task) (domain.Task, error) {
 
 // FindAll implements port.ITaskRepository.
 func (t TaskRepository) FindAll() ([]domain.Task, error) {
-	panic("unimplemented")
+	var tasks []domain.Task
+
+	coll := t.conn.Collection("task")
+	cursor, err := coll.Find(context.Background(), bson.D{})
+	if err != nil {
+		log.Println("[LOG] TaskRepository: ", err)
+		return []domain.Task{}, err
+	}
+
+	if err = cursor.All(context.Background(), &tasks); err != nil {
+		log.Println("[LOG] TaskRepository: ", err)
+		return []domain.Task{}, err
+	}
+
+	return tasks, nil
 }
 
 // FindById implements port.ITaskRepository.
 func (t TaskRepository) FindById(id string) (domain.Task, error) {
-	panic("unimplemented")
+	var task domain.Task
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Println("[LOG] TaskRepository: ", err)
+		return domain.Task{}, domain.TaskNotFound
+	}
+
+	coll := t.conn.Collection("task")
+	err = coll.FindOne(context.Background(), bson.D{{Key: "_id", Value: objID}}).Decode(&task)
+	if err != nil {
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			log.Println("[LOG] TaskRepository: ", err)
+			return domain.Task{}, domain.TaskNotFound
+		}
+
+		log.Println("[LOG] TaskRepository: ", err)
+		return domain.Task{}, err
+	}
+
+	return task, nil
 }
 
 // UpdateById implements port.ITaskRepository.

@@ -27,7 +27,7 @@ func NewTaskApp(taskRepository port.ITaskRepository) ITaskApp {
 func (t TaskApp) Save(taskdto domain.TaskDTO) (domain.TaskDTO, error) {
 	task, err := t.taskRepository.Save(domain.ToTask(taskdto))
 	if err != nil {
-		return domain.TaskDTO{}, nil
+		return domain.TaskDTO{}, err
 	}
 
 	return domain.ToTaskDTO(task), nil
@@ -47,7 +47,7 @@ func (t TaskApp) FindAll() ([]domain.TaskDTO, error) {
 func (t TaskApp) FindById(id string) (domain.TaskDTO, error) {
 	task, err := t.taskRepository.FindById(id)
 	if err != nil {
-		return domain.TaskDTO{}, nil
+		return domain.TaskDTO{}, err
 	}
 	return domain.ToTaskDTO(task), nil
 }
@@ -56,7 +56,7 @@ func (t TaskApp) FindById(id string) (domain.TaskDTO, error) {
 func (t TaskApp) UpdateById(id string, taskdto domain.TaskDTO) (domain.TaskDTO, error) {
 	task, err := t.taskRepository.UpdateById(id, domain.ToTask(taskdto))
 	if err != nil {
-		return domain.TaskDTO{}, nil
+		return domain.TaskDTO{}, err
 	}
 
 	return domain.ToTaskDTO(task), nil
@@ -66,7 +66,7 @@ func (t TaskApp) UpdateById(id string, taskdto domain.TaskDTO) (domain.TaskDTO, 
 func (t TaskApp) DeleteById(id string) (domain.TaskDTO, error) {
 	task, err := t.taskRepository.DeleteById(id)
 	if err != nil {
-		return domain.TaskDTO{}, nil
+		return domain.TaskDTO{}, err
 	}
 
 	return domain.ToTaskDTO(task), nil
