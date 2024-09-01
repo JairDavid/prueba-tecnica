@@ -27,6 +27,5 @@ El objetivo es crear un microservicio en Go que permita crear, leer y listar tar
 
 ## Dependencias
 - Chi router
-- Go validator
 - MongoBD Driver
 

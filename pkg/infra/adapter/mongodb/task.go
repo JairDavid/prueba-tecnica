@@ -137,6 +137,19 @@ func (t TaskRepository) UpdateById(id string, task domain.Task) (domain.Task, er
 }
 
 // DeleteById implements port.ITaskRepository.
-func (t TaskRepository) DeleteById(id string) (domain.Task, error) {
-	panic("unimplemented")
+func (t TaskRepository) DeleteById(id string) error {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Println("[LOG] TaskRepository: ", err)
+		return domain.TaskNotFound
+	}
+
+	coll := t.conn.Collection("task")
+	_, err = coll.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: objID}})
+	if err != nil {
+		log.Println("[LOG] TaskRepository: ", err)
+		return err
+	}
+
+	return nil
 }

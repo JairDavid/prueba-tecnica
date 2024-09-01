@@ -162,5 +162,35 @@ func (t TaskHandler) UpdateById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t TaskHandler) DeleteById(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
+	w.Header().Set("Content-Type", "application/json")
+
+	idDocument := chi.URLParam(r, "id")
+	if idDocument == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(response.Error{
+			Status:  http.StatusBadRequest,
+			Message: "id path-param is required",
+		})
+		return
+	}
+
+	err := t.taskApp.DeleteById(idDocument)
+	if err != nil {
+
+		if errors.Is(err, domain.TaskNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			_ = json.NewEncoder(w).Encode(response.Error{
+				Status:  http.StatusNotFound,
+				Message: err.Error(),
+			})
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+	_ = json.NewEncoder(w).Encode(response.Common{
+		Status:  http.StatusAccepted,
+		Message: "deleted successfully",
+		Data:    idDocument,
+	})
 }

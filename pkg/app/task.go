@@ -10,7 +10,7 @@ type ITaskApp interface {
 	FindAll() ([]domain.TaskDTO, error)
 	FindById(id string) (domain.TaskDTO, error)
 	UpdateById(id string, taskDto domain.TaskDTO) (domain.TaskDTO, error)
-	DeleteById(id string) (domain.TaskDTO, error)
+	DeleteById(id string) error
 }
 
 type TaskApp struct {
@@ -63,11 +63,11 @@ func (t TaskApp) UpdateById(id string, taskdto domain.TaskDTO) (domain.TaskDTO, 
 }
 
 // DeleteById implements ITaskApp
-func (t TaskApp) DeleteById(id string) (domain.TaskDTO, error) {
-	task, err := t.taskRepository.DeleteById(id)
+func (t TaskApp) DeleteById(id string) error {
+	err := t.taskRepository.DeleteById(id)
 	if err != nil {
-		return domain.TaskDTO{}, err
+		return err
 	}
 
-	return domain.ToTaskDTO(task), nil
+	return nil
 }

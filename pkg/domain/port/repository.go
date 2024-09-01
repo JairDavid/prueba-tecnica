@@ -7,5 +7,5 @@ type ITaskRepository interface {
 	FindAll() ([]domain.Task, error)
 	FindById(id string) (domain.Task, error)
 	UpdateById(id string, task domain.Task) (domain.Task, error)
-	DeleteById(id string) (domain.Task, error)
+	DeleteById(id string) error
 }
