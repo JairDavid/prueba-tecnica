@@ -27,6 +27,15 @@ El objetivo es crear un microservicio en Go que permita crear, leer y listar tar
 
 ## Dependencias
 - Chi router
-- Go validator
 - MongoBD Driver
+
+## Levantar el entorno - Docker (Compose)
+Ejecutar el siguiente comando
+```
+docker-compose up
+```
+Para liberar el entorno ejecutar
+```
+docker-compose down
+```
 
